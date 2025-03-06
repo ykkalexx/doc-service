@@ -1,5 +1,3 @@
-import React from "react";
-
 const Contact = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
@@ -40,7 +38,7 @@ const Contact = () => {
           <textarea
             id="message"
             className="w-full p-2 border rounded-lg"
-            rows="4"
+            rows={4}
             placeholder="Your Message"
             required
           ></textarea>

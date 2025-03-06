@@ -1,5 +1,3 @@
-import React from "react";
-
 const FAQ = () => {
   return (
     <div className="p-6">
