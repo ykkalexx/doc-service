@@ -1,32 +1,18 @@
 import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { fetchDocs, deleteDoc, uploadDoc } from "../../redux/docsSlice";
 import { Label } from "../Label";
 
-interface Document {
-  id: string;
-  name: string;
-  originalName: string;
-  fileType: string;
-  uploadDate: string;
-}
-
 export const DocsTab = () => {
-  const [docs, setDocs] = useState<Document[]>([]);
+  const dispatch = useAppDispatch();
+  const { documents, status } = useAppSelector((state) => state.docs);
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
-
-  const fetchDocuments = async () => {
-    try {
-      const response = await fetch(`http://localhost:8004/api/documents`);
-      if (!response.ok) throw new Error("Failed to fetch documents");
-      const data = await response.json();
-      setDocs(data);
-    } catch (error) {
-      console.error("Failed to fetch documents:", error);
+    if (status === "idle") {
+      dispatch(fetchDocs());
     }
-  };
+  }, [dispatch, status]);
 
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -37,23 +23,12 @@ export const DocsTab = () => {
     setIsUploading(true);
 
     try {
-      const document = {
-        originalName: file.name,
-        fileType: file.type,
-      };
-
-      const response = await fetch("http://localhost:8004/api/documents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(document),
-      });
-
-      if (!response.ok) throw new Error("Failed to upload document");
-
-      const uploadedDoc = await response.json();
-      setDocs((prev) => [...prev, uploadedDoc]);
+      await dispatch(
+        uploadDoc({
+          originalName: file.name,
+          fileType: file.type,
+        })
+      ).unwrap();
     } catch (error) {
       console.error("Failed to upload document:", error);
     } finally {
@@ -63,15 +38,7 @@ export const DocsTab = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      const response = await fetch(
-        `http://localhost:8004/api/documents/${id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to delete document");
-      setDocs((prev) => prev.filter((doc) => doc.id !== id));
+      await dispatch(deleteDoc(id)).unwrap();
     } catch (error) {
       console.error("Failed to delete document:", error);
     }
@@ -89,8 +56,16 @@ export const DocsTab = () => {
       return "spreadsheet";
     if (fileType.includes("presentation") || fileType.includes("powerpoint"))
       return "presentation";
-    return "document"; // default
+    return "document";
   };
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <p>Loading documents...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -110,8 +85,8 @@ export const DocsTab = () => {
       </div>
 
       <div className="grid gap-4">
-        {docs.length > 0 ? (
-          docs.map((doc) => (
+        {documents.length > 0 ? (
+          documents.map((doc) => (
             <div
               key={doc.id}
               className="flex items-center justify-between p-4 border bg-gray-50 rounded-xl border-gray-200/50"
