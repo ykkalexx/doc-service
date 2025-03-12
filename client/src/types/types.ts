@@ -13,3 +13,11 @@ export interface Project {
   endDate: string;
   items: TimelineItem[];
 }
+
+export interface Document {
+  id: string;
+  name: string;
+  originalName: string;
+  fileType: string;
+  uploadDate: string;
+}

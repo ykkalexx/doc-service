@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://ykkalexx.github.io/doc-service",
+  "homepage": "https://ykkalexx.github.io/doc-service/",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.1.3",
+    "@reduxjs/toolkit": "^2.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.2.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7"

@@ -1,41 +1,54 @@
-import { DocsTab } from "@/components/docs/DocsTab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { fetchDocs, deleteDoc } from "../redux/docsSlice";
 
-export const Dashboard = () => {
+export function Dashboard() {
+  const dispatch = useAppDispatch();
+  const { documents, status, error } = useAppSelector((state) => state.docs);
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchDocs());
+    }
+  }, [dispatch, status]);
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteDoc(id));
+  };
+
+  if (status === "loading") {
+    return <div>Loading...</div>;
+  }
+
+  if (status === "failed") {
+    return <div>Error: {error}</div>;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <nav className="sticky top-0 z-50 border-b backdrop-blur-xl bg-white/75 border-gray-200/20">
-        <div className="max-w-6xl px-6 py-4 mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl tracking-tight text-gray-900 font-extralight">
-                Research Management
-              </h1>
-              <span className="hidden text-sm font-light text-gray-500 sm:inline">
-                /
-              </span>
-              <span className="hidden text-sm font-light text-gray-500 sm:inline">
-                Dashboard
-              </span>
-            </div>
-          </div>
-        </div>
-      </nav>
-      <main className="w-full px-6 py-8 mx-auto">
-        <div className="space-y-8">
-          <div className="flex items-center justify-center w-full p-6">
-            <Tabs defaultValue="timeline" className="w-full">
-              <TabsList className="mb-6">
-                <TabsTrigger value="documents">Documents</TabsTrigger>
-              </TabsList>
+    <div className="container p-4 mx-auto">
+      <h1 className="mb-4 text-2xl font-bold">Documents Dashboard</h1>
 
-              <TabsContent value="documents">
-                <DocsTab />
-              </TabsContent>
-            </Tabs>
-          </div>
+      {documents.length === 0 ? (
+        <p>No documents found.</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {documents.map((doc) => (
+            <div key={doc.id} className="p-4 border rounded-md">
+              <h2 className="font-semibold">{doc.originalName}</h2>
+              <p className="text-sm text-gray-600">Type: {doc.fileType}</p>
+              <p className="text-sm text-gray-600">
+                Uploaded: {new Date(doc.uploadDate).toLocaleDateString()}
+              </p>
+              <button
+                className="px-3 py-1 mt-2 text-white bg-red-500 rounded hover:bg-red-600"
+                onClick={() => handleDelete(doc.id)}
+              >
+                Delete
+              </button>
+            </div>
+          ))}
         </div>
-      </main>
+      )}
     </div>
   );
-};
+}
