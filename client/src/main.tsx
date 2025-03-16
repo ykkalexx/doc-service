@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import FAQ from "./pages/faq";
 import Contact from "./pages/contact";
 import NavBar from "./components/Navbar";
+import Projects from "./pages/Projects";
 
 // Layout component that includes the NavBar and renders child routes
 const Layout = () => {
@@ -32,6 +33,10 @@ const router = createBrowserRouter(
         {
           index: true,
           element: <Home />,
+        },
+        {
+          path: "projects",
+          element: <Projects />,
         },
         {
           path: "dashboard",

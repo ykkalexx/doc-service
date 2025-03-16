@@ -15,6 +15,11 @@ const NavBar = () => {
           </Link>
         </li>
         <li>
+          <Link to="/projects" className="text-white hover:underline">
+            Projects
+          </Link>
+        </li>
+        <li>
           <Link to="/faq" className="text-white hover:underline">
             FAQ
           </Link>
