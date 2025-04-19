@@ -1,37 +1,52 @@
-import { useState } from "react";
-
-interface Project {
-  id: string;
-  title: string;
-  startDate: Date;
-  endDate: Date;
-  status: "planned" | "in-progress" | "completed";
-}
+import { useState, useEffect } from "react";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
+import {
+  fetchProjects,
+  createProject as createProjectAction,
+  updateProject as updateProjectAction,
+  deleteProject as deleteProjectAction,
+  Project,
+} from "../redux/projectsSlice";
 
 export default function Projects() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const dispatch = useAppDispatch();
+  const { projects, status } = useAppSelector((state) => state.projects);
   const [newProject, setNewProject] = useState({
     title: "",
     startDate: "",
     endDate: "",
+    status: "planned" as const,
   });
+
+  useEffect(() => {
+    if (status === "idle") {
+      dispatch(fetchProjects());
+    }
+  }, [status, dispatch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const project: Project = {
-      id: crypto.randomUUID(),
-      title: newProject.title,
-      startDate: new Date(newProject.startDate),
-      endDate: new Date(newProject.endDate),
-      status: "planned",
-    };
-    setProjects([...projects, project]);
-    setNewProject({ title: "", startDate: "", endDate: "" });
+    dispatch(createProjectAction(newProject));
+    setNewProject({ title: "", startDate: "", endDate: "", status: "planned" });
   };
 
-  const calculateTimelineWidth = (start: Date, end: Date) => {
-    const totalDays = (end.getTime() - start.getTime()) / (1000 * 3600 * 24);
-    return `${Math.max(totalDays * 2, 100)}px`; // 2px per day, minimum 100px
+  const handleStatusChange = (id: string, newStatus: Project["status"]) => {
+    const project = projects.find((p) => p.id === id);
+    if (project) {
+      dispatch(updateProjectAction({ ...project, status: newStatus }));
+    }
+  };
+
+  const handleDeleteProject = (id: string) => {
+    dispatch(deleteProjectAction(id));
+  };
+
+  const calculateTimelineWidth = (start: string, end: string) => {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const totalDays =
+      (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    return `${Math.max(totalDays * 2, 100)}px`;
   };
 
   return (
@@ -90,13 +105,39 @@ export default function Projects() {
 
       {/* Timeline View */}
       <div className="space-y-4">
+        {status === "loading" && (
+          <div className="flex items-center justify-center p-12">
+            <div className="w-6 h-6 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+            <span className="ml-2">Loading projects...</span>
+          </div>
+        )}
+
         {projects.map((project) => (
           <div key={project.id} className="p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-medium">{project.title}</h3>
-              <span className="px-2 py-1 text-xs text-white bg-blue-500 rounded-full">
-                {project.status}
-              </span>
+              <div className="flex items-center space-x-2">
+                <select
+                  value={project.status}
+                  onChange={(e) =>
+                    handleStatusChange(
+                      project.id,
+                      e.target.value as Project["status"]
+                    )
+                  }
+                  className="px-2 py-1 text-xs text-white bg-blue-500 rounded-full"
+                >
+                  <option value="planned">planned</option>
+                  <option value="in-progress">in-progress</option>
+                  <option value="completed">completed</option>
+                </select>
+                <button
+                  onClick={() => handleDeleteProject(project.id)}
+                  className="p-1 text-xs text-white bg-red-500 rounded-full hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
             </div>
             <div className="relative h-8 mb-2 overflow-hidden bg-gray-200 rounded-lg">
               <div
@@ -110,13 +151,13 @@ export default function Projects() {
               />
             </div>
             <div className="flex justify-between text-sm text-gray-600">
-              <span>{project.startDate.toLocaleDateString()}</span>
-              <span>{project.endDate.toLocaleDateString()}</span>
+              <span>{new Date(project.startDate).toLocaleDateString()}</span>
+              <span>{new Date(project.endDate).toLocaleDateString()}</span>
             </div>
           </div>
         ))}
 
-        {projects.length === 0 && (
+        {status === "succeeded" && projects.length === 0 && (
           <div className="flex flex-col items-center justify-center p-12 text-gray-500 border border-dashed rounded-xl border-gray-300/50">
             <p className="mb-2">No projects created yet</p>
             <p className="text-sm">

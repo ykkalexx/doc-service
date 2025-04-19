@@ -45,8 +45,10 @@ export const DocsTab = () => {
   };
 
   const getDocumentType = (
-    fileType: string
+    fileType: string | undefined
   ): "document" | "image" | "spreadsheet" | "presentation" => {
+    if (!fileType) return "document";
+
     if (fileType.includes("image")) return "image";
     if (
       fileType.includes("spreadsheet") ||
@@ -96,7 +98,7 @@ export const DocsTab = () => {
                   type={getDocumentType(doc.fileType)}
                   date={new Date(doc.uploadDate).toLocaleDateString()}
                 >
-                  {doc.fileType.split("/")[1]?.toUpperCase() || "DOC"}
+                  {doc.fileType?.split("/")[1]?.toUpperCase() || "DOC"}
                 </Label>
                 <div>
                   <h3 className="text-sm font-medium text-gray-900">

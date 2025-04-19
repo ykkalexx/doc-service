@@ -14,7 +14,7 @@ const initialState: DocsState = {
 };
 
 export const fetchDocs = createAsyncThunk("docs/fetchDocs", async () => {
-  const response = await fetch("/api/docs");
+  const response = await fetch("http://localhost:8004/api/documents");
   if (!response.ok) {
     throw new Error("Failed to fetch documents");
   }
@@ -24,7 +24,7 @@ export const fetchDocs = createAsyncThunk("docs/fetchDocs", async () => {
 export const uploadDoc = createAsyncThunk(
   "docs/uploadDoc",
   async (docData: { originalName: string; fileType: string }) => {
-    const response = await fetch("/api/docs", {
+    const response = await fetch("http://localhost:8004/api/documents", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -42,7 +42,7 @@ export const uploadDoc = createAsyncThunk(
 export const deleteDoc = createAsyncThunk(
   "docs/deleteDoc",
   async (id: string) => {
-    const response = await fetch(`/api/docs/${id}`, {
+    const response = await fetch(`http://localhost:8004/api/documents/${id}`, {
       method: "DELETE",
     });
 
